@@ -84,6 +84,49 @@ def evaluate_model(model, X_val, y_val, le):
     
     plot_confusion_matrix(model, y_val, y_val_pred, le)
 
+
+def evaluate_model_nn(model, X_val, y_val, le, one_hot=True):
+    # Predict probabilities or logits
+    y_val_probs = model.predict(X_val)
+
+    # Convert to class labels
+    y_val_pred = np.argmax(y_val_probs, axis=1)
+    
+    # If true labels are one-hot encoded, convert them to class indices
+    if one_hot:
+        y_val_true = np.argmax(y_val, axis=1)
+    else:
+        y_val_true = y_val
+
+    # Evaluate
+    accuracy = accuracy_score(y_val_true, y_val_pred)
+    print(f"Validation Accuracy: {accuracy:.4f}")
+    
+    print(classification_report(y_val_true, y_val_pred, target_names=le.classes_))
+
+    # Save report
+    report = classification_report(y_val_true, y_val_pred, target_names=le.classes_, output_dict=True)
+    report_df = pd.DataFrame(report).transpose()
+    report_df['val_accuracy'] = accuracy
+
+    report_filename = f"validation_evaluation_reports/NeuralNetwork_validation_evaluation_report.csv"
+    os.makedirs(os.path.dirname(report_filename), exist_ok=True)
+    report_df.to_csv(report_filename, index=True)
+    print(f"Evaluation report saved as {report_filename}")
+
+    # Plot confusion matrix
+    plot_confusion_matrix_nn(y_val_true, y_val_pred, le)
+
+def plot_confusion_matrix_nn(y_true, y_pred, le):
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+                xticklabels=le.classes_, yticklabels=le.classes_)
+    plt.ylabel('Actual')
+    plt.xlabel('Predicted')
+    plt.title('Confusion Matrix')
+    plt.show()
+
 def save_model(model):
     model_name = model.__class__.__name__
     
