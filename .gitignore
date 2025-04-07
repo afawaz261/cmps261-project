@@ -7,3 +7,5 @@ __pycache__/
 
 # Jupyter Notebooks checkpoints
 .ipynb_checkpoints/
+
+models/*.pkl
