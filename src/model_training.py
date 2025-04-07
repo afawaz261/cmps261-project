@@ -117,6 +117,7 @@ def evaluate_model_nn(model, X_val, y_val, le, one_hot=True):
     # Plot confusion matrix
     plot_confusion_matrix_nn(y_val_true, y_val_pred, le)
 
+
 def plot_confusion_matrix_nn(y_true, y_pred, le):
     cm = confusion_matrix(y_true, y_pred)
     plt.figure(figsize=(8, 6))
