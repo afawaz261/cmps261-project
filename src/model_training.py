@@ -182,6 +182,8 @@ def summary_of_models():
     summary_df = pd.DataFrame(model_summaries)
     
     summary_df = summary_df.sort_values(by='Macro F1', ascending=False)
+    
+    summary_df.to_csv("validation_evaluation_reports/model_summary.csv", index=True)
 
     print(summary_df)
 
