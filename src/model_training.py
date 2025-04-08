@@ -10,6 +10,9 @@ import joblib
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.utils import to_categorical
+import numpy as np
+from xgboost import XGBClassifier
+import glob
 
 def train_lr_model(X_train, y_train):
     # Train a Logistic Regression model
@@ -85,15 +88,14 @@ def evaluate_model(model, X_val, y_val, le):
     plot_confusion_matrix(model, y_val, y_val_pred, le)
 
 
-def evaluate_model_nn(model, X_val, y_val, le, one_hot=True):
+def evaluate_model_nn(model, X_val, y_val, le):
     # Predict probabilities or logits
     y_val_probs = model.predict(X_val)
 
     # Convert to class labels
     y_val_pred = np.argmax(y_val_probs, axis=1)
-    
-    # If true labels are one-hot encoded, convert them to class indices
-    if one_hot:
+        
+    if y_val.ndim == 2:  
         y_val_true = np.argmax(y_val, axis=1)
     else:
         y_val_true = y_val
@@ -162,3 +164,42 @@ def plot_confusion_matrix(model, y_val, y_val_pred, le):
     
     plt.show()
     
+def summary_of_models():
+    csv_files = glob.glob("validation_evaluation_reports/*_validation_evaluation_report.csv")
+    model_summaries = []
+    
+    for file in csv_files:
+        df = pd.read_csv(file, index_col=0)
+
+        model_name = os.path.basename(file).replace("_validation_evaluation_report.csv", "")
+        
+        macro_avg = df.loc['macro avg']
+        weighted_avg = df.loc['weighted avg']
+        accuracy = df.loc['accuracy']['val_accuracy']  
+
+        summary = {
+            'Model': model_name,
+            'Accuracy': accuracy,
+            'Macro Precision': macro_avg['precision'],
+            'Macro Recall': macro_avg['recall'],
+            'Macro F1': macro_avg['f1-score'],
+            'Weighted Precision': weighted_avg['precision'],
+            'Weighted Recall': weighted_avg['recall'],
+            'Weighted F1': weighted_avg['f1-score'],
+        }
+        model_summaries.append(summary)
+    
+    summary_df = pd.DataFrame(model_summaries)
+    
+    summary_df = summary_df.sort_values(by='Macro F1', ascending=False)
+
+    print(summary_df)
+
+def load_model_if_exists(model_name):
+    file_path = os.path.join("models", f"{model_name}.pkl")
+    
+    if os.path.exists(file_path):
+        print(f"Model '{model_name}' already exists. Loading from file.")
+        return joblib.load(file_path)
+    else:
+        return None
