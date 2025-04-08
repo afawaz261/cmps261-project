@@ -117,17 +117,7 @@ def evaluate_model_nn(model, X_val, y_val, le):
     print(f"Evaluation report saved as {report_filename}")
 
     # Plot confusion matrix
-    plot_confusion_matrix_nn(y_val_true, y_val_pred, le)
-
-def plot_confusion_matrix_nn(y_true, y_pred, le):
-    cm = confusion_matrix(y_true, y_pred)
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
-                xticklabels=le.classes_, yticklabels=le.classes_)
-    plt.ylabel('Actual')
-    plt.xlabel('Predicted')
-    plt.title('Confusion Matrix')
-    plt.show()
+    plot_confusion_matrix(model, y_val_true, y_val_pred, le)
 
 def save_model(model):
     model_name = model.__class__.__name__
