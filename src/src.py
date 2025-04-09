@@ -221,3 +221,67 @@ def visualize_word_clouds(df):
 
     plt.tight_layout()
     plt.show()
+
+def extract_features(df):
+    # Initialize TF-IDF Vectorizer
+    tfidf = TfidfVectorizer(max_features=5000)
+    
+    # Fit and transform the CleanText
+    X_tfidf = tfidf.fit_transform(df['CleanText'])
+    
+    return X_tfidf, tfidf
+
+
+def encode_labels(df):
+    # Encode the 'Status' labels
+    df['Status'] = df['Status'].dropna()
+    le = LabelEncoder()
+    y = le.fit_transform(df['Status'])
+    
+    return y, le
+
+def split_data(X, y):
+    # Split the data into training, validation, and test sets
+    X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, stratify=y_temp, random_state=42)
+    
+    print(f"Train size: {X_train.shape[0]} | Val: {X_val.shape[0]} | Test: {X_test.shape[0]}")
+    
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+def handle_imbalance(X_train, y_train):
+    # Apply SMOTE to handle class imbalance
+    smote = SMOTE(random_state=42)
+    X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
+    return X_resampled, y_resampled
+
+def load_data(filepath):
+    df = pd.read_csv(filepath)
+    return df
+
+def clean_data(df):
+    df.columns = ['Statement', 'Status']
+    df = df.dropna(subset=['Statement'])
+    df = df.drop_duplicates()
+    return df
+
+def check_class_distribution(df):
+    status_counts = df['Status'].value_counts()
+    print("Class Distribution:\n", status_counts)
+    
+    df['Status'].value_counts().plot(kind='bar')
+    plt.title("Class Distribution")
+    plt.xlabel("Labels")
+    plt.ylabel("Counts")
+    plt.show()
+    
+def add_text_length(df):
+    # Add a column for text length (in words)
+    df['TextLength'] = df['Statement'].apply(lambda x: len(str(x).split()))
+    
+    return df
+
+def check_text_length_distribution(df):
+    df['TextLength'].hist(bins=50)
+    plt.title("Distribution of Text Lengths")  
+    plt.show() 
